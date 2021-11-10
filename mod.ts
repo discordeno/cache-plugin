@@ -1,4 +1,10 @@
-import { Bot } from "./deps.ts";
+import { Bot, Collection } from "./deps.ts";
+import {
+  channelSweeper,
+  guildSweeper,
+  memberSweeper,
+  messageSweeper,
+} from "./src/sweepers.ts";
 
 // PLUGINS MUST TAKE A BOT ARGUMENT WHICH WILL BE MODIFIED
 export function enableCachePlugin(bot: Bot): Bot {
@@ -76,5 +82,39 @@ export function enableCachePlugin(bot: Bot): Bot {
   return bot;
 }
 
+/** Enables sweepers for your bot but will require, enabling cache first. */
+export function enableCacheSweepers(bot: Bot) {
+  // @ts-ignore TODO: see if we can fix this type
+  bot.cache.guilds = new Collection([], {
+    // @ts-ignore TODO: more cache issues
+    sweeper: { filter: guildSweeper, interval: 3660000, bot },
+  });
+  // @ts-ignore TODO: see if we can fix this type
+  bot.cache.channels = new Collection([], {
+    // @ts-ignore TODO: more cache issues
+    sweeper: { filter: channelSweeper, interval: 3660000, bot },
+  });
+  // @ts-ignore TODO: see if we can fix this type
+  bot.cache.members = new Collection([], {
+    sweeper: { filter: memberSweeper, interval: 300000, bot },
+  });
+  // @ts-ignore TODO: see if we can fix this type
+  bot.cache.messages = new Collection([], {
+    sweeper: { filter: messageSweeper, interval: 300000, bot },
+  });
+  // @ts-ignore TODO: see if we can fix this type
+  bot.cache.presences = new Collection([], {
+    sweeper: { filter: () => true, interval: 300000, bot },
+  });
+
+  // DISPATCH REQUIREMENTS
+  const handleDiscordPayloadOld = bot.gateway.handleDiscordPayload;
+  bot.gateway.handleDiscordPayload = async function (_, data, shardId) {
+    // RUN DISPATCH CHECK
+    await bot.events.dispatchRequirements(bot, data, shardId);
+    // RUN OLD HANDLER
+    handleDiscordPayloadOld(_, data, shardId);
+  };
+}
 
 export default enableCachePlugin;
