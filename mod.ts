@@ -75,3 +75,6 @@ export function enableCachePlugin(bot: Bot): Bot {
   // PLUGINS MUST RETURN THE BOT
   return bot;
 }
+
+
+export default enableCachePlugin;
