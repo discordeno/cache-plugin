@@ -9,12 +9,13 @@ just want simple functionality.
 
 ```ts
 // MOVE TO DEPS.TS AND USE SPECIFIC VERSION
-import enableCachePlugin from "https://deno.land/x/discordeno-cache-plugin/mod.ts";
+import { enableCachePlugin, enableCacheSweepers } from "https://deno.land/x/discordeno-cache-plugin/mod.ts";
 
 // Create the bot object, THIS WILL NEED YOUR OPTIONS.
 const bot = createBot({});
 // Enables the cache plugin on this bot
 enableCachePlugin(bot);
+enableCacheSweepers(bot);
 // Start your bot
 await startBot(bot);
 ```
