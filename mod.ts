@@ -16,11 +16,21 @@ export function enableCachePlugin(bot: Bot): Bot {
   // Get the unmodified transformer.
   const { guild, user, member, channel, message, presence } = bot.transformers;
   // Override the transformer
-  bot.transformers.guild = function (...args) {
+  bot.transformers.guild = function (bot, payload) {
     // Run the unmodified transformer
-    const result = guild(...args);
+    const result = guild(bot, payload);
     // Cache the result
-    bot.cache.guilds.set(result.id, result);
+    if (result) {
+      bot.cache.guilds.set(result.id, result);
+    
+      const channels = payload.guild.channels || [];
+
+      channels.forEach((channel) => {
+        const chnl = bot.transformers.channel(bot, { channel, guildId: result.id });
+        bot.cache.channels.set(chnl.id, chnl);
+      });
+    }
+    
     // Return the result
     return result;
   };
@@ -30,7 +40,8 @@ export function enableCachePlugin(bot: Bot): Bot {
     // Run the unmodified transformer
     const result = user(...args);
     // Cache the result
-    bot.cache.users.set(result.id, result);
+    if (result)
+      bot.cache.users.set(result.id, result);
     // Return the result
     return result;
   };
@@ -40,10 +51,11 @@ export function enableCachePlugin(bot: Bot): Bot {
     // Run the unmodified transformer
     const result = member(...args);
     // Cache the result
-    bot.cache.members.set(
-      bot.transformers.snowflake(`${result.id}${result.guildId}`),
-      result,
-    );
+    if (result)
+      bot.cache.members.set(
+        bot.transformers.snowflake(`${result.id}${result.guildId}`),
+        result,
+      );
     // Return the result
     return result;
   };
@@ -53,7 +65,8 @@ export function enableCachePlugin(bot: Bot): Bot {
     // Run the unmodified transformer
     const result = channel(...args);
     // Cache the result
-    bot.cache.channels.set(result.id, result);
+    if (result)
+      bot.cache.channels.set(result.id, result);
     // Return the result
     return result;
   };
@@ -63,7 +76,8 @@ export function enableCachePlugin(bot: Bot): Bot {
     // Run the unmodified transformer
     const result = message(...args);
     // Cache the result
-    bot.cache.messages.set(result.id, result);
+    if (result)
+     bot.cache.messages.set(result.id, result);
     // Return the result
     return result;
   };
@@ -73,7 +87,8 @@ export function enableCachePlugin(bot: Bot): Bot {
     // Run the unmodified transformer
     const result = presence(...args);
     // Cache the result
-    bot.cache.presences.set(result.user.id, result);
+    if (result)
+      bot.cache.presences.set(result.user.id, result);
     // Return the result
     return result;
   };
