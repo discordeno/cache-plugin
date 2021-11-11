@@ -25,7 +25,7 @@ export function enableCachePlugin(bot: Bot): Bot {
     
       const channels = payload.guild.channels || [];
 
-      channels.forEach(async (channel) => {
+      channels.forEach((channel) => {
         const chnl = bot.transformers.channel(bot, { channel, guildId: result.id });
         await bot.cache.channels.set(chnl.id, chnl);
       });
