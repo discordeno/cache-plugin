@@ -126,7 +126,7 @@ export function enableCacheSweepers(bot: Bot) {
   const handleDiscordPayloadOld = bot.gateway.handleDiscordPayload;
   bot.gateway.handleDiscordPayload = async function (_, data, shardId) {
     // RUN DISPATCH CHECK
-    await dispatchRequirements(bot, data, shardId);
+    await dispatchRequirements(bot, data);
     // RUN OLD HANDLER
     handleDiscordPayloadOld(_, data, shardId);
   };
