@@ -5,6 +5,7 @@ import {
   memberSweeper,
   messageSweeper,
 } from "./src/sweepers.ts";
+import { dispatchRequirements } from "./src/dispatchRequirements.ts";
 
 // PLUGINS MUST TAKE A BOT ARGUMENT WHICH WILL BE MODIFIED
 export function enableCachePlugin(bot: Bot): Bot {
@@ -125,7 +126,7 @@ export function enableCacheSweepers(bot: Bot) {
   const handleDiscordPayloadOld = bot.gateway.handleDiscordPayload;
   bot.gateway.handleDiscordPayload = async function (_, data, shardId) {
     // RUN DISPATCH CHECK
-    await bot.events.dispatchRequirements(bot, data, shardId);
+    await dispatchRequirements(bot, data, shardId);
     // RUN OLD HANDLER
     handleDiscordPayloadOld(_, data, shardId);
   };
