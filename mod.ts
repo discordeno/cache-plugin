@@ -6,6 +6,7 @@ import {
   messageSweeper,
 } from "./src/sweepers.ts";
 import { dispatchRequirements } from "./src/dispatchRequirements.ts";
+import { setupCacheRemovals } from "./src/setupCacheRemovals.ts";
 
 // PLUGINS MUST TAKE A BOT ARGUMENT WHICH WILL BE MODIFIED
 export function enableCachePlugin(bot: Bot<Cache>): Bot {
@@ -92,6 +93,8 @@ export function enableCachePlugin(bot: Bot<Cache>): Bot {
     // Return the result
     return result;
   };
+
+  setupCacheRemovals(bot);
 
   // PLUGINS MUST RETURN THE BOT
   return bot;
