@@ -1,4 +1,4 @@
-import { Bot, Collection } from "./deps.ts";
+import { Bot, Collection, Cache } from "./deps.ts";
 import {
   channelSweeper,
   guildSweeper,
@@ -8,7 +8,7 @@ import {
 import { dispatchRequirements } from "./src/dispatchRequirements.ts";
 
 // PLUGINS MUST TAKE A BOT ARGUMENT WHICH WILL BE MODIFIED
-export function enableCachePlugin(bot: Bot): Bot {
+export function enableCachePlugin(bot: Bot<Cache>): Bot {
   // MARK THIS PLUGIN BEING USED
   bot.enabledPlugins.add("CACHE");
 
@@ -98,7 +98,7 @@ export function enableCachePlugin(bot: Bot): Bot {
 }
 
 /** Enables sweepers for your bot but will require, enabling cache first. */
-export function enableCacheSweepers(bot: Bot) {
+export function enableCacheSweepers(bot: Bot<Cache>) {
   // @ts-ignore TODO: see if we can fix this type
   bot.cache.guilds = new Collection([], {
     // @ts-ignore TODO: more cache issues
