@@ -16,7 +16,7 @@ export function enableCachePlugin(bot: Bot<Cache>): Bot {
   // CUSTOMIZATION GOES HERE
 
   // Get the unmodified transformer.
-  const { guild, user, member, channel, message, presence } = bot.transformers;
+  const { guild, user, member, channel, message, presence, role } = bot.transformers;
   // Override the transformer
   bot.transformers.guild = function (bot, payload) {
     // Run the unmodified transformer
@@ -93,6 +93,18 @@ export function enableCachePlugin(bot: Bot<Cache>): Bot {
     // Return the result
     return result;
   };
+
+  // Override the transformer
+  bot.transformers.role = function (...args) {
+    // Run the unmodified transformer
+    const result = role(...args);
+    // Cache the result
+    if (result)
+      bot.cache.guilds.get(result.guildId)?.roles.set(result.id, result);
+    // Return the result
+    return result;
+  };
+
 
   setupCacheRemovals(bot);
 
