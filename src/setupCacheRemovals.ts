@@ -35,8 +35,10 @@ export function setupCacheRemovals(bot: Bot<Cache>) {
 
   bot.handlers.CHANNEL_DELETE = function (_, data, shardId) {
     const payload = data.d as SnakeCasedPropertiesDeep<Channel>;
-    bot.cache.channels.delete(bot.transformers.snowflake(payload.id));
+    // HANDLER BEFORE DELETING, BECAUSE HANDLER RUNS TRANSFORMER WHICH RECACHES
     CHANNEL_DELETE(bot, data, shardId);
+    bot.cache.channels.delete(bot.transformers.snowflake(payload.id));
+    
   };
 
   bot.handlers.GUILD_MEMBER_REMOVE = function (_, data, shardId) {
