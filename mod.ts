@@ -1,4 +1,4 @@
-import { Bot, Collection, Cache } from "./deps.ts";
+import { Bot, Collection, Cache, GuildEmojisUpdate, SnakeCasedPropertiesDeep } from "./deps.ts";
 import {
   channelSweeper,
   guildSweeper,
@@ -104,6 +104,20 @@ export function enableCachePlugin(bot: Bot<Cache>): Bot {
     // Return the result
     return result;
   };
+
+  const { GUILD_EMOJIS_UPDATE } = bot.handlers;
+  bot.handlers.GUILD_EMOJIS_UPDATE = function (bot, data, shardId) {
+    const payload = data.d as SnakeCasedPropertiesDeep<GuildEmojisUpdate>;
+
+    const guild = bot.cache.guilds.get(bot.transformers.snowflake(payload.guild_id));
+    // @ts-ignore TODO: fix this somehow
+    if (guild) guild.emojis = new Collection(payload.emojis.map(e => {
+      const emoji = bot.transformers.emoji(bot, e);
+      return [emoji.id, emoji];
+    }));
+
+    GUILD_EMOJIS_UPDATE(bot, data, shardId);
+  }
 
 
   setupCacheRemovals(bot);

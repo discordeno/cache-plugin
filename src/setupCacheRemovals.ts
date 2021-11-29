@@ -23,7 +23,7 @@ export function setupCacheRemovals(bot: Bot<Cache>) {
     GUILD_EMOJIS_UPDATE,
     GUILD_MEMBER_REMOVE,
     GUILD_ROLE_DELETE,
-    MESSAGE_DELETE,
+    // MESSAGE_DELETE,
     MESSAGE_DELETE_BULK,
   } = bot.handlers;
 
@@ -38,7 +38,6 @@ export function setupCacheRemovals(bot: Bot<Cache>) {
     // HANDLER BEFORE DELETING, BECAUSE HANDLER RUNS TRANSFORMER WHICH RECACHES
     CHANNEL_DELETE(bot, data, shardId);
     bot.cache.channels.delete(bot.transformers.snowflake(payload.id));
-    
   };
 
   bot.handlers.GUILD_MEMBER_REMOVE = function (_, data, shardId) {
@@ -69,10 +68,19 @@ export function setupCacheRemovals(bot: Bot<Cache>) {
     GUILD_EMOJIS_UPDATE(bot, data, shardId);
   };
 
-  bot.handlers.MESSAGE_DELETE = function (_, data, shardId) {
+  bot.handlers.MESSAGE_DELETE = function (_, data) {
     const payload = data.d as SnakeCasedPropertiesDeep<MessageDelete>;
-    bot.cache.messages.delete(bot.transformers.snowflake(payload.id));
-    MESSAGE_DELETE(bot, data, shardId);
+    const id = bot.transformers.snowflake(payload.id);
+    const message = bot.cache.messages.get(id);
+    bot.events.messageDelete(bot, {
+      id,
+      channelId: bot.transformers.snowflake(payload.channel_id),
+      guildId: payload.guild_id
+        ? bot.transformers.snowflake(payload.guild_id)
+        : undefined,
+    }, message);
+    bot.cache.messages.delete(id);
+    // MESSAGE_DELETE(bot, data, shardId);
   };
 
   bot.handlers.MESSAGE_DELETE_BULK = function (_, data, shardId) {
