@@ -1,9 +1,10 @@
-import { Bot, Cache, GatewayPayload } from "../deps.ts";
+import { GatewayPayload } from "../deps.ts";
+import { BotWithCache } from "./addCacheCollections.ts";
 
 const processing = new Set<bigint>();
 
 export async function dispatchRequirements(
-  bot: Bot<Cache>,
+  bot: BotWithCache,
   data: GatewayPayload,
 ) {
   // DELETE MEANS WE DONT NEED TO FETCH. CREATE SHOULD HAVE DATA TO CACHE
@@ -17,11 +18,11 @@ export async function dispatchRequirements(
         (data.d as any)?.guild_id) ?? "",
   );
 
-  if (!id || bot.cache.activeGuildIds.has(id)) return;
+  if (!id || bot.activeGuildIds.has(id)) return;
 
   // If this guild is in cache, it has not been swept and we can cancel
-  if (bot.cache.guilds.has(id)) {
-    bot.cache.activeGuildIds.add(id);
+  if (bot.guilds.has(id)) {
+    bot.activeGuildIds.add(id);
     return;
   }
 
@@ -80,13 +81,13 @@ export async function dispatchRequirements(
   }
 
   // Add to cache
-  bot.cache.guilds.set(id, guild);
-  bot.cache.dispatchedGuildIds.delete(id);
+  bot.guilds.set(id, guild);
+  bot.dispatchedGuildIds.delete(id);
   channels.forEach((channel) => {
-    bot.cache.dispatchedChannelIds.delete(channel.id);
-    bot.cache.channels.set(channel.id, channel);
+    bot.dispatchedChannelIds.delete(channel.id);
+    bot.channels.set(channel.id, channel);
   });
-  bot.cache.members.set(
+  bot.members.set(
     bot.transformers.snowflake(`${botMember.id}${guild.id}`),
     botMember,
   );

@@ -1,37 +1,42 @@
-import { Bot, Collection, Cache, GuildEmojisUpdate, SnakeCasedPropertiesDeep } from "./deps.ts";
 import {
-  channelSweeper,
-  guildSweeper,
-  memberSweeper,
-  messageSweeper,
-} from "./src/sweepers.ts";
-import { dispatchRequirements } from "./src/dispatchRequirements.ts";
+  Bot,
+  Collection,
+  GuildEmojisUpdate,
+  SnakeCasedPropertiesDeep,
+} from "./deps.ts";
 import { setupCacheRemovals } from "./src/setupCacheRemovals.ts";
+import {
+  addCacheCollections,
+  BotWithCache,
+} from "./src/addCacheCollections.ts";
+import { setupCacheEdits } from "./src/setupCacheEdits.ts";
 
 // PLUGINS MUST TAKE A BOT ARGUMENT WHICH WILL BE MODIFIED
-export function enableCachePlugin(bot: Bot<Cache>): Bot {
+export function enableCachePlugin(rawBot: Bot): BotWithCache {
   // MARK THIS PLUGIN BEING USED
-  bot.enabledPlugins.add("CACHE");
+  rawBot.enabledPlugins.add("CACHE");
 
   // CUSTOMIZATION GOES HERE
+  const bot = addCacheCollections(rawBot) as BotWithCache;
 
   // Get the unmodified transformer.
-  const { guild, user, member, channel, message, presence, role } = bot.transformers;
+  const { guild, user, member, channel, message, presence, role } =
+    bot.transformers;
   // Override the transformer
-  bot.transformers.guild = function (bot, payload) {
+  bot.transformers.guild = function (_, payload) {
     // Run the unmodified transformer
     const result = guild(bot, payload);
     // Cache the result
     if (result) {
-      bot.cache.guilds.set(result.id, result);
-    
+      bot.guilds.set(result.id, result);
+
       const channels = payload.guild.channels || [];
 
       channels.forEach((channel) => {
         bot.transformers.channel(bot, { channel, guildId: result.id });
       });
     }
-    
+
     // Return the result
     return result;
   };
@@ -41,8 +46,9 @@ export function enableCachePlugin(bot: Bot<Cache>): Bot {
     // Run the unmodified transformer
     const result = user(...args);
     // Cache the result
-    if (result)
-      bot.cache.users.set(result.id, result);
+    if (result) {
+      bot.users.set(result.id, result);
+    }
     // Return the result
     return result;
   };
@@ -52,11 +58,12 @@ export function enableCachePlugin(bot: Bot<Cache>): Bot {
     // Run the unmodified transformer
     const result = member(...args);
     // Cache the result
-    if (result)
-      bot.cache.members.set(
+    if (result) {
+      bot.members.set(
         bot.transformers.snowflake(`${result.id}${result.guildId}`),
         result,
       );
+    }
     // Return the result
     return result;
   };
@@ -66,19 +73,34 @@ export function enableCachePlugin(bot: Bot<Cache>): Bot {
     // Run the unmodified transformer
     const result = channel(...args);
     // Cache the result
-    if (result)
-      bot.cache.channels.set(result.id, result);
+    if (result) {
+      bot.channels.set(result.id, result);
+    }
     // Return the result
     return result;
   };
 
   // Override the transformer
-  bot.transformers.message = function (...args) {
+  bot.transformers.message = function (_, payload) {
     // Run the unmodified transformer
-    const result = message(...args);
+    const result = message(bot, payload);
     // Cache the result
-    if (result)
-     bot.cache.messages.set(result.id, result);
+    if (result) {
+      bot.messages.set(result.id, result);
+      // CACHE THE USER
+      const user = bot.transformers.user(bot, payload.author);
+      bot.users.set(user.id, user);
+
+      if (payload.guild_id && payload.member) {
+        const guildId = bot.transformers.snowflake(payload.guild_id);
+        // CACHE THE MEMBER
+        bot.members.set(
+          bot.transformers.snowflake(`${payload.author.id}${payload.guild_id}`),
+          bot.transformers.member(bot, payload.member, guildId, user.id),
+        );
+      }
+    }
+
     // Return the result
     return result;
   };
@@ -88,8 +110,9 @@ export function enableCachePlugin(bot: Bot<Cache>): Bot {
     // Run the unmodified transformer
     const result = presence(...args);
     // Cache the result
-    if (result)
-      bot.cache.presences.set(result.user.id, result);
+    if (result) {
+      bot.presences.set(result.user.id, result);
+    }
     // Return the result
     return result;
   };
@@ -99,66 +122,38 @@ export function enableCachePlugin(bot: Bot<Cache>): Bot {
     // Run the unmodified transformer
     const result = role(...args);
     // Cache the result
-    if (result)
-      bot.cache.guilds.get(result.guildId)?.roles.set(result.id, result);
+    if (result) {
+      bot.guilds.get(result.guildId)?.roles.set(result.id, result);
+    }
     // Return the result
     return result;
   };
 
   const { GUILD_EMOJIS_UPDATE } = bot.handlers;
-  bot.handlers.GUILD_EMOJIS_UPDATE = function (bot, data, shardId) {
+  bot.handlers.GUILD_EMOJIS_UPDATE = function (_, data, shardId) {
     const payload = data.d as SnakeCasedPropertiesDeep<GuildEmojisUpdate>;
 
-    const guild = bot.cache.guilds.get(bot.transformers.snowflake(payload.guild_id));
-    // @ts-ignore TODO: fix this somehow
-    if (guild) guild.emojis = new Collection(payload.emojis.map(e => {
-      const emoji = bot.transformers.emoji(bot, e);
-      return [emoji.id, emoji];
-    }));
+    const guild = bot.guilds.get(bot.transformers.snowflake(payload.guild_id));
+    if (guild) {
+      guild.emojis = new Collection(payload.emojis.map((e) => {
+        const emoji = bot.transformers.emoji(bot, e);
+        return [emoji.id!, emoji];
+      }));
+    }
 
     GUILD_EMOJIS_UPDATE(bot, data, shardId);
-  }
-
+  };
 
   setupCacheRemovals(bot);
+  setupCacheEdits(bot);
 
   // PLUGINS MUST RETURN THE BOT
   return bot;
 }
 
-/** Enables sweepers for your bot but will require, enabling cache first. */
-export function enableCacheSweepers(bot: Bot<Cache>) {
-  // @ts-ignore TODO: see if we can fix this type
-  bot.cache.guilds = new Collection([], {
-    // @ts-ignore TODO: more cache issues
-    sweeper: { filter: guildSweeper, interval: 3660000, bot },
-  });
-  // @ts-ignore TODO: see if we can fix this type
-  bot.cache.channels = new Collection([], {
-    // @ts-ignore TODO: more cache issues
-    sweeper: { filter: channelSweeper, interval: 3660000, bot },
-  });
-  // @ts-ignore TODO: see if we can fix this type
-  bot.cache.members = new Collection([], {
-    sweeper: { filter: memberSweeper, interval: 300000, bot },
-  });
-  // @ts-ignore TODO: see if we can fix this type
-  bot.cache.messages = new Collection([], {
-    sweeper: { filter: messageSweeper, interval: 300000, bot },
-  });
-  // @ts-ignore TODO: see if we can fix this type
-  bot.cache.presences = new Collection([], {
-    sweeper: { filter: () => true, interval: 300000, bot },
-  });
-
-  // DISPATCH REQUIREMENTS
-  const handleDiscordPayloadOld = bot.gateway.handleDiscordPayload;
-  bot.gateway.handleDiscordPayload = async function (_, data, shardId) {
-    // RUN DISPATCH CHECK
-    await dispatchRequirements(bot, data);
-    // RUN OLD HANDLER
-    handleDiscordPayloadOld(_, data, shardId);
-  };
-}
-
 export default enableCachePlugin;
+export * from "./src/addCacheCollections.ts";
+export * from "./src/dispatchRequirements.ts";
+export * from "./src/setupCacheEdits.ts";
+export * from "./src/setupCacheRemovals.ts";
+export * from "./src/sweepers.ts";
