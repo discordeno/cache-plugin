@@ -1,12 +1,7 @@
 import { BotWithCache } from "./addCacheCollections.ts";
 import { dispatchRequirements } from "./dispatchRequirements.ts";
 
-/** Enables sweepers for you
- * 
- * 
- * 
- * 
- * r bot but will require, enabling cache first. */
+/** Enables sweepers for your bot but will require, enabling cache first. */
 export function enableCacheSweepers(bot: BotWithCache) {
   bot.guilds.startSweeper({
     filter: function (guild, _, bot: BotWithCache) {
