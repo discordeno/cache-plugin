@@ -12,10 +12,12 @@ just want simple functionality.
 import { enableCachePlugin, enableCacheSweepers } from "https://deno.land/x/discordeno_cache_plugin/mod.ts";
 
 // Create the bot object, THIS WILL NEED YOUR OPTIONS.
-const bot = createBot({});
+const baseBot = createBot({});
 // Enables the cache plugin on this bot
-enableCachePlugin(bot);
-enableCacheSweepers(bot);
+const bot = enableCachePlugin(baseBot);
+enableCacheSweepers(bot)
+.0
+;
 // Start your bot
 await startBot(bot);
 ```
