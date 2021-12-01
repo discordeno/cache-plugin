@@ -1,11 +1,13 @@
 import {
+  Bot,
+  Collection,
   DiscordenoChannel,
+  DiscordenoGuild,
   DiscordenoMember,
   DiscordenoMessage,
   DiscordenoPresence,
   DiscordenoUser,
 } from "../deps.ts";
-import { Bot, Collection, DiscordenoGuild } from "../deps.ts";
 
 export interface BotWithCache extends Bot {
   guilds: Collection<bigint, DiscordenoGuild>;
