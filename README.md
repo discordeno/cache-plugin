@@ -15,9 +15,7 @@ import { enableCachePlugin, enableCacheSweepers } from "https://deno.land/x/disc
 const baseBot = createBot({});
 // Enables the cache plugin on this bot
 const bot = enableCachePlugin(baseBot);
-enableCacheSweepers(bot)
-.0
-;
+enableCacheSweepers(bot);
 // Start your bot
 await startBot(bot);
 ```
