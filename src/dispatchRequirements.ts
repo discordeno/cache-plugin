@@ -1,10 +1,10 @@
-import { GatewayPayload } from "../deps.ts";
+import { Bot, GatewayPayload } from "../deps.ts";
 import { BotWithCache } from "./addCacheCollections.ts";
 
 const processing = new Set<bigint>();
 
-export async function dispatchRequirements(
-  bot: BotWithCache,
+export async function dispatchRequirements<B extends Bot>(
+  bot: BotWithCache<B>,
   data: GatewayPayload,
 ) {
   // DELETE MEANS WE DONT NEED TO FETCH. CREATE SHOULD HAVE DATA TO CACHE
