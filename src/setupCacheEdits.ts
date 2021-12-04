@@ -1,11 +1,12 @@
 import {
+Bot,
   GuildMemberAdd,
   GuildMemberRemove,
   SnakeCasedPropertiesDeep,
 } from "../deps.ts";
 import type { BotWithCache } from "./addCacheCollections.ts";
 
-export function setupCacheEdits(bot: BotWithCache) {
+export function setupCacheEdits<B extends Bot>(bot: BotWithCache<B>) {
   const { GUILD_MEMBER_ADD, GUILD_MEMBER_REMOVE } = bot.handlers;
 
   bot.handlers.GUILD_MEMBER_ADD = function (_, data, shardId) {

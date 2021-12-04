@@ -1,4 +1,5 @@
 import {
+Bot,
   Channel,
   Collection,
   GuildBanAddRemove,
@@ -11,7 +12,7 @@ import {
 import { SnakeCasedPropertiesDeep, UnavailableGuild } from "../deps.ts";
 import { BotWithCache } from "./addCacheCollections.ts";
 
-export function setupCacheRemovals(bot: BotWithCache) {
+export function setupCacheRemovals<B extends Bot>(bot: BotWithCache<B>) {
   const {
     CHANNEL_DELETE,
     GUILD_BAN_ADD,

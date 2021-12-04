@@ -1,10 +1,11 @@
+import { Bot } from "../deps.ts";
 import { BotWithCache } from "./addCacheCollections.ts";
 import { dispatchRequirements } from "./dispatchRequirements.ts";
 
 /** Enables sweepers for your bot but will require, enabling cache first. */
-export function enableCacheSweepers(bot: BotWithCache) {
+export function enableCacheSweepers<B extends Bot>(bot: BotWithCache<B>) {
   bot.guilds.startSweeper({
-    filter: function (guild, _, bot: BotWithCache) {
+    filter: function (guild, _, bot: BotWithCache<B>) {
       // Reset activity for next interval
       if (bot.activeGuildIds.delete(guild.id)) return false;
 
@@ -21,7 +22,7 @@ export function enableCacheSweepers(bot: BotWithCache) {
     filter: function channelSweeper(
       channel,
       key,
-      bot: BotWithCache,
+      bot: BotWithCache<B>,
     ) {
       // If this is in a guild and the guild was dispatched, then we can dispatch the channel
       if (channel.guildId && bot.dispatchedGuildIds.has(channel.guildId)) {
@@ -39,7 +40,7 @@ export function enableCacheSweepers(bot: BotWithCache) {
   });
 
   bot.members.startSweeper({
-    filter: function memberSweeper(member, _, bot: BotWithCache) {
+    filter: function memberSweeper(member, _, bot: BotWithCache<B>) {
       // Don't sweep the bot else strange things will happen
       if (member.id === bot.id) return false;
 
