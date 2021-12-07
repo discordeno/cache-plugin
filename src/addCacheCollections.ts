@@ -9,7 +9,9 @@ import {
   DiscordenoUser,
 } from "../deps.ts";
 
-export interface BotWithCache extends Bot {
+export type BotWithCache<B extends Bot> = B & CacheProps;
+
+export interface CacheProps extends Bot {
   guilds: Collection<bigint, DiscordenoGuild>;
   users: Collection<bigint, DiscordenoUser>;
   members: Collection<bigint, DiscordenoMember>;
@@ -21,8 +23,8 @@ export interface BotWithCache extends Bot {
   activeGuildIds: Set<bigint>;
 }
 
-export function addCacheCollections(bot: Bot) {
-  const cacheBot = bot as BotWithCache;
+export function addCacheCollections<B extends Bot>(bot: B): BotWithCache<B> {
+  const cacheBot = bot as BotWithCache<B>;
   cacheBot.guilds = new Collection();
   cacheBot.users = new Collection();
   cacheBot.members = new Collection();
@@ -33,5 +35,5 @@ export function addCacheCollections(bot: Bot) {
   cacheBot.dispatchedChannelIds = new Set();
   cacheBot.activeGuildIds = new Set();
 
-  return bot as BotWithCache;
+  return bot as BotWithCache<B>;
 }

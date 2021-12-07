@@ -12,12 +12,12 @@ import {
 import { setupCacheEdits } from "./src/setupCacheEdits.ts";
 
 // PLUGINS MUST TAKE A BOT ARGUMENT WHICH WILL BE MODIFIED
-export function enableCachePlugin(rawBot: Bot): BotWithCache {
+export function enableCachePlugin<B extends Bot>(rawBot: B): BotWithCache<B> {
   // MARK THIS PLUGIN BEING USED
   rawBot.enabledPlugins.add("CACHE");
 
   // CUSTOMIZATION GOES HERE
-  const bot = addCacheCollections(rawBot) as BotWithCache;
+  const bot = addCacheCollections(rawBot);
 
   // Get the unmodified transformer.
   const { guild, user, member, channel, message, presence, role } =
