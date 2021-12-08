@@ -9,7 +9,7 @@ import {
   DiscordenoUser,
 } from "../deps.ts";
 
-export type BotWithCache<B extends Bot> = B & CacheProps;
+export type BotWithCache<B extends Bot = Bot> = B & CacheProps;
 
 export interface CacheProps extends Bot {
   guilds: Collection<bigint, DiscordenoGuild>;

@@ -12,7 +12,7 @@ import {
 import { setupCacheEdits } from "./src/setupCacheEdits.ts";
 
 // PLUGINS MUST TAKE A BOT ARGUMENT WHICH WILL BE MODIFIED
-export function enableCachePlugin<B extends Bot>(rawBot: B): BotWithCache<B> {
+export function enableCachePlugin<B extends Bot = Bot>(rawBot: B): BotWithCache<B> {
   // MARK THIS PLUGIN BEING USED
   rawBot.enabledPlugins.add("CACHE");
 
