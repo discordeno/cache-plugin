@@ -54,7 +54,6 @@ export async function dispatchRequirements<B extends Bot>(
   const guild = (await bot.helpers
     .getGuild(id, {
       counts: true,
-      addToCache: false,
     })
     .catch(console.log));
 
