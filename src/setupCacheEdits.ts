@@ -1,6 +1,5 @@
 import type {
   Bot,
-  Emoji,
   GuildMemberAdd,
   GuildMemberRemove,
   MessageReactionAdd,
@@ -57,14 +56,16 @@ export function setupCacheEdits<B extends Bot>(bot: BotWithCache<B>) {
       };
 
       // if theres no reaction add it
-      if (!reactions?.includes(emoji.name)) {
+      if (!message.reactions || !reactions) {
+        message.reactions = [toSet];
+      } else if (!reactions.includes(emoji.name)) {
         message.reactions?.push(toSet);
       } else { // otherwise the reaction has already been added so +1 to the reaction count
         const current = message.reactions?.[reactions.indexOf(emoji.name)];
 
         // rewrite
         if (current && message.reactions?.[message.reactions.indexOf(current)]) {
-          message.reactions[message.reactions.indexOf(current)].count = current?.count + 1;
+          message.reactions[message.reactions.indexOf(current)].count++;
         }
       }
     }
@@ -89,7 +90,7 @@ export function setupCacheEdits<B extends Bot>(bot: BotWithCache<B>) {
 
         if (current) {
           if (current.count > 0) {
-            current.count = current.count - 1;
+            current.count--;
           }
           // delete when count is 0
           if (current.count === 0) {
