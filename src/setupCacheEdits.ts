@@ -45,20 +45,22 @@ export function setupCacheEdits<B extends Bot>(bot: BotWithCache<B>) {
     const messageId = bot.transformers.snowflake(payload.message_id)
     const message = bot.messages.get(messageId);
 
+    const emoji = bot.transformers.emoji(bot, payload.emoji);
+
     // if the message is cached
     if (message) {
       const reactions = message.reactions?.map((r) => r.emoji);
       const toSet = {
         count: 1,
         me: bot.transformers.snowflake(payload.user_id) === bot.id,
-        emoji: payload.emoji as Emoji & { id: bigint },
+        emoji: emoji,
       };
 
       // if theres no reaction add it
-      if (!reactions?.includes(toSet.emoji)) {
+      if (!reactions?.includes(emoji)) {
         message.reactions?.push(toSet);
       } else { // otherwise the reaction has already been added so +1 to the reaction count
-        const current = message.reactions?.[reactions.indexOf(toSet.emoji)];
+        const current = message.reactions?.[reactions.indexOf(emoji)];
 
         // rewrite
         if (current && message.reactions?.[message.reactions.indexOf(current)]) {
@@ -75,12 +77,14 @@ export function setupCacheEdits<B extends Bot>(bot: BotWithCache<B>) {
     const messageId = bot.transformers.snowflake(payload.message_id)
     const message = bot.messages.get(messageId);
 
+    const emoji = bot.transformers.emoji(bot, payload.emoji);
+
     // if the message is cached
     if (message) {
       const reactions = message.reactions?.map((r) => r.emoji);
 
-      if (reactions?.indexOf(payload.emoji as Emoji & { id: bigint }) !== undefined) {
-        const current = message.reactions?.[reactions?.indexOf(payload.emoji as Emoji & { id: bigint })];
+      if (reactions?.indexOf(emoji) !== undefined) {
+        const current = message.reactions?.[reactions.indexOf(emoji)];
 
         if (current) {
           if (current.count > 0) {
