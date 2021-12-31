@@ -49,7 +49,7 @@ export function setupCacheEdits<B extends Bot>(bot: BotWithCache<B>) {
 
     // if the message is cached
     if (message) {
-      const reactions = message.reactions?.map((r) => r.emoji);
+      const reactions = message.reactions?.map((r) => r.emoji.name);
       const toSet = {
         count: 1,
         me: bot.transformers.snowflake(payload.user_id) === bot.id,
@@ -57,10 +57,10 @@ export function setupCacheEdits<B extends Bot>(bot: BotWithCache<B>) {
       };
 
       // if theres no reaction add it
-      if (!reactions?.includes(emoji)) {
+      if (!reactions?.includes(emoji.name)) {
         message.reactions?.push(toSet);
       } else { // otherwise the reaction has already been added so +1 to the reaction count
-        const current = message.reactions?.[reactions.indexOf(emoji)];
+        const current = message.reactions?.[reactions.indexOf(emoji.name)];
 
         // rewrite
         if (current && message.reactions?.[message.reactions.indexOf(current)]) {
@@ -68,6 +68,7 @@ export function setupCacheEdits<B extends Bot>(bot: BotWithCache<B>) {
         }
       }
     }
+
     MESSAGE_REACTION_ADD(bot, data, shardId);
   }
 
@@ -81,16 +82,16 @@ export function setupCacheEdits<B extends Bot>(bot: BotWithCache<B>) {
 
     // if the message is cached
     if (message) {
-      const reactions = message.reactions?.map((r) => r.emoji);
+      const reactions = message.reactions?.map((r) => r.emoji.name);
 
-      if (reactions?.indexOf(emoji) !== undefined) {
-        const current = message.reactions?.[reactions.indexOf(emoji)];
+      if (reactions?.indexOf(emoji.name) !== undefined) {
+        const current = message.reactions?.[reactions.indexOf(emoji.name)];
 
         if (current) {
           if (current.count > 0) {
             current.count = current.count - 1;
           } else {
-            message.reactions?.splice(message.reactions?.indexOf(current), 0);
+            message.reactions?.splice(message.reactions?.indexOf(current), 1);
           }
           // when someone deleted a reaction that doesn't exist in the cache just pass
         }
