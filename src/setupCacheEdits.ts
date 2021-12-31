@@ -93,7 +93,7 @@ export function setupCacheEdits<B extends Bot>(bot: BotWithCache<B>) {
           }
           // delete when count is 0
           if (current.count === 0) {
-            message.reactions?.splice(message.reactions?.indexOf(current), 1);
+            message.reactions?.splice(reactions?.indexOf(emoji.name), 1);
           }
           // when someone deleted a reaction that doesn't exist in the cache just pass
         }
